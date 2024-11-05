@@ -65,6 +65,14 @@ def calculate_insights(stocks):
             gain_loss = current_value - total_purchase_price
             gain_loss_percent = (gain_loss / total_purchase_price) * 100 if total_purchase_price != 0 else 0
             
+            # Determine the color based on price comparison (logic switched)
+            if average_purchase_price < current_price:
+                price_color = "\033[32m"  # Green for average price below current price (gain)
+            elif average_purchase_price > current_price:
+                price_color = "\033[31m"  # Red for average price above current price (loss)
+            else:
+                price_color = "\033[0m"    # Default color for equal prices
+
             report_data.append({
                 'Stock': stock_name,
                 'Average Purchase Price (INR)': average_purchase_price,
@@ -74,12 +82,12 @@ def calculate_insights(stocks):
                 'Total Quantity': total_quantity  # Include total quantity in report data
             })
 
-            # Add to table data
+            # Add to table data with formatted price color
             table_data.append([
                 stock_name,
                 total_quantity,
                 f"₹{average_purchase_price:.2f}",
-                f"₹{current_price:.2f}",
+                f"{price_color}₹{current_price:.2f}\033[0m",  # Color-coded current price
                 f"₹{gain_loss:.2f}",
                 gain_loss_percent  # Keep this as a float for sorting
             ])
@@ -111,7 +119,6 @@ def calculate_insights(stocks):
     print(tabulate(formatted_table_data, headers=["Stock", "Total Quantity", "Avg Purchase Price (INR)", "Current Price (INR)", "Gain/Loss (INR)", "Gain/Loss (%)"], tablefmt="grid"))
     
     return report_data, total_investment, total_current_value
-
 
 # Function to save stock data to a CSV file
 def save_stock_data(stocks):
