@@ -100,7 +100,7 @@ def calculate_insights(stocks):
     ])
 
     # Sort table_data by Gain/Loss (%) in descending order
-    table_data = sorted(table_data, key=lambda x: x[5], reverse=True)
+    table_data = sorted(table_data[:-1], key=lambda x: x[5], reverse=True) + [table_data[-1]]
 
     # Format Gain/Loss (%) column as a percentage string for display
     formatted_table_data = [
