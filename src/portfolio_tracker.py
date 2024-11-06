@@ -30,6 +30,7 @@ def calculate_insights(stocks):
     total_quantity_all_stocks = 0
     report_data = []
     stock_groups = {}
+    stock_profit_booking = {}  # Dictionary to track profit booking
 
     for stock in stocks:
         if stock.name not in stock_groups:
@@ -45,10 +46,16 @@ def calculate_insights(stocks):
     for stock_name, stock_entries in stock_groups.items():
         total_purchase_price = 0
         total_quantity = 0
+        cumulative_profit = 0  # Initialize cumulative profit for the stock
         
         for stock in stock_entries:
             total_purchase_price += stock.purchase_price * stock.quantity
             total_quantity += stock.quantity
+            
+            # Check if stock has been sold and calculate profit
+            if stock.sell_price is not None:
+                sell_profit = (stock.sell_price - stock.purchase_price) * stock.quantity
+                cumulative_profit += sell_profit
         
         average_purchase_price = total_purchase_price / total_quantity if total_quantity > 0 else 0
         current_price = get_current_price(stock_name)
@@ -75,7 +82,8 @@ def calculate_insights(stocks):
                 f"₹{int(gain_loss)}",  # Convert to integer
                 round(gain_loss_percent, 2),  # Keep Gain/Loss (%) with two decimal places
                 f"₹{int(future_sell_value_30)}",  # Convert to integer
-                f"₹{int(future_sell_value_minus_5)}"  # Convert to integer
+                f"₹{int(future_sell_value_minus_5)}",  # Convert to integer
+                f"₹{int(cumulative_profit)}"  # Cumulative profit from sales
             ])
         else:
             print(f"Could not retrieve current price for {stock_name}.")
@@ -101,11 +109,11 @@ def calculate_insights(stocks):
         f"₹{int(total_gain_loss)}",
         f"{total_gain_loss_percent:.2f}%",  # Keep as two decimal points
         "-",  # Placeholder for future sell values in the total row
-        "-"
+        "-",  # Placeholder for profit booking in the total row
     ])
 
     # Print the formatted table with Serial No.
-    print(tabulate(formatted_table_data, headers=["Ser", "Stock", "Qty", "Avg Price", "Price", "Gain/Loss", "Gain/Loss (%)", "Sell (+30%)", "Purchase(-5%)"], tablefmt="grid"))
+    print(tabulate(formatted_table_data, headers=["Ser", "Stock", "Qty", "Avg", "Price", "P/L", "P/L(%)", "Sell(+30%)", "Buy(-5%)", "Profit Booking"], tablefmt="grid"))
 
     return report_data, total_investment, total_current_value
 
