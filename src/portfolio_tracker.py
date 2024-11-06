@@ -116,7 +116,7 @@ def calculate_insights(stocks):
     ]
 
     # Print the tabulated data with Total row
-    print(tabulate(formatted_table_data, headers=["Stock", "Total Quantity", "Avg Purchase Price (INR)", "Current Price (INR)", "Gain/Loss (INR)", "Gain/Loss (%)"], tablefmt="grid"))
+    print(tabulate(formatted_table_data, headers=["Stock", "Qty", "Avg Purchase Price", "Current Price", "Gain/Loss", "Gain/Loss"], tablefmt="grid"))
     
     return report_data, total_investment, total_current_value
 
