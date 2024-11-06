@@ -70,12 +70,12 @@ def calculate_insights(stocks):
             table_data.append([
                 stock_name,
                 total_quantity,
-                f"₹{average_purchase_price:.2f}",
-                f"{price_color}₹{current_price:.2f}\033[0m",
-                f"₹{gain_loss:.2f}",  # Format Gain/Loss with two decimal places
-                round(gain_loss_percent, 2),  # Round Gain/Loss (%) to two decimal places
-                f"₹{future_sell_value_30:.2f}",
-                f"₹{future_sell_value_minus_5:.2f}"
+                f"₹{int(average_purchase_price)}",  # Convert to integer
+                f"{price_color}₹{int(current_price)}\033[0m",  # Convert to integer and apply color
+                f"₹{int(gain_loss)}",  # Convert to integer
+                round(gain_loss_percent, 2),  # Keep Gain/Loss (%) with two decimal places
+                f"₹{int(future_sell_value_30)}",  # Convert to integer
+                f"₹{int(future_sell_value_minus_5)}"  # Convert to integer
             ])
         else:
             print(f"Could not retrieve current price for {stock_name}.")
@@ -93,19 +93,19 @@ def calculate_insights(stocks):
     total_gain_loss_percent = (total_gain_loss / total_investment) * 100 if total_investment != 0 else 0
     
     formatted_table_data.append([
-        "-",  # Placeholder to give a gap
+        "-",
         "Total",
-        total_quantity_all_stocks,        
-        f"₹{total_investment:.2f}",
-        f"₹{total_current_value:.2f}",
-        f"₹{total_gain_loss:.2f}",
-        f"{total_gain_loss_percent:.2f}%",  # Format total Gain/Loss (%) with two decimal places
+        total_quantity_all_stocks,
+        f"₹{int(total_investment)}",
+        f"₹{int(total_current_value)}",
+        f"₹{int(total_gain_loss)}",
+        f"{total_gain_loss_percent:.2f}%",  # Keep as two decimal points
         "-",  # Placeholder for future sell values in the total row
         "-"
     ])
 
     # Print the formatted table with Serial No.
-    print(tabulate(formatted_table_data, headers=["Ser", "Stock", "Qty", "Avg Price", "Price", "Gain/Loss", "Gain/Loss (%)", "Sel (+30%)", "Purchase(-5%)"], tablefmt="grid"))
+    print(tabulate(formatted_table_data, headers=["Ser", "Stock", "Qty", "Avg Price", "Price", "Gain/Loss", "Gain/Loss (%)", "Sell (+30%)", "Purchase(-5%)"], tablefmt="grid"))
 
     return report_data, total_investment, total_current_value
 
