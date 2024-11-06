@@ -27,12 +27,10 @@ def get_current_price(stock_name):
 def calculate_insights(stocks):
     total_investment = 0
     total_current_value = 0
-    total_quantity_all_stocks = 0  # To track total quantity across all stocks
+    total_quantity_all_stocks = 0
     report_data = []
-    
-    # Group stocks by name
     stock_groups = {}
-    
+
     for stock in stocks:
         if stock.name not in stock_groups:
             stock_groups[stock.name] = []
@@ -41,14 +39,13 @@ def calculate_insights(stocks):
     print("Stock Portfolio Insights:")
     print("=================================")
 
-    # Prepare data for tabulation
     table_data = []
 
+    # Collect data without serial numbers for sorting
     for stock_name, stock_entries in stock_groups.items():
         total_purchase_price = 0
         total_quantity = 0
         
-        # Calculate total purchase price and quantity for averaging
         for stock in stock_entries:
             total_purchase_price += stock.purchase_price * stock.quantity
             total_quantity += stock.quantity
@@ -60,64 +57,56 @@ def calculate_insights(stocks):
             current_value = current_price * total_quantity
             total_investment += total_purchase_price
             total_current_value += current_value
-            total_quantity_all_stocks += total_quantity  # Add to total quantity across all stocks
+            total_quantity_all_stocks += total_quantity
             
             gain_loss = current_value - total_purchase_price
             gain_loss_percent = (gain_loss / total_purchase_price) * 100 if total_purchase_price != 0 else 0
             
-            # Determine the color based on price comparison (logic switched)
-            if average_purchase_price < current_price:
-                price_color = "\033[32m"  # Green for average price below current price (gain)
-            elif average_purchase_price > current_price:
-                price_color = "\033[31m"  # Red for average price above current price (loss)
-            else:
-                price_color = "\033[0m"    # Default color for equal prices
+            future_sell_value_30 = average_purchase_price * 1.30
+            future_sell_value_minus_5 = average_purchase_price * 0.95
+            
+            price_color = "\033[32m" if average_purchase_price < current_price else "\033[31m" if average_purchase_price > current_price else "\033[0m"
 
-            report_data.append({
-                'Stock': stock_name,
-                'Average Purchase Price (INR)': average_purchase_price,
-                'Current Price (INR)': current_price,
-                'Gain/Loss (INR)': gain_loss,
-                'Gain/Loss (%)': gain_loss_percent,
-                'Total Quantity': total_quantity  # Include total quantity in report data
-            })
-
-            # Add to table data with formatted price color
             table_data.append([
                 stock_name,
                 total_quantity,
                 f"₹{average_purchase_price:.2f}",
-                f"{price_color}₹{current_price:.2f}\033[0m",  # Color-coded current price
-                f"₹{gain_loss:.2f}",
-                gain_loss_percent  # Keep this as a float for sorting
+                f"{price_color}₹{current_price:.2f}\033[0m",
+                f"₹{gain_loss:.2f}",  # Format Gain/Loss with two decimal places
+                round(gain_loss_percent, 2),  # Round Gain/Loss (%) to two decimal places
+                f"₹{future_sell_value_30:.2f}",
+                f"₹{future_sell_value_minus_5:.2f}"
             ])
         else:
             print(f"Could not retrieve current price for {stock_name}.")
     
-    # Add summary row to the table
+    # Sort table_data by Gain/Loss (%) in descending order
+    table_data = sorted(table_data, key=lambda x: x[5], reverse=True)
+
+    # Add serial numbers
+    formatted_table_data = [
+        [idx + 1] + row for idx, row in enumerate(table_data)
+    ]
+
+    # Add total row without serial number
     total_gain_loss = total_current_value - total_investment
     total_gain_loss_percent = (total_gain_loss / total_investment) * 100 if total_investment != 0 else 0
     
-    table_data.append([
+    formatted_table_data.append([
+        "-",  # Placeholder to give a gap
         "Total",
-        total_quantity_all_stocks,
+        total_quantity_all_stocks,        
         f"₹{total_investment:.2f}",
         f"₹{total_current_value:.2f}",
         f"₹{total_gain_loss:.2f}",
-        total_gain_loss_percent  # Summary gain/loss percent for portfolio
+        f"{total_gain_loss_percent:.2f}%",  # Format total Gain/Loss (%) with two decimal places
+        "-",  # Placeholder for future sell values in the total row
+        "-"
     ])
 
-    # Sort table_data by Gain/Loss (%) in descending order
-    table_data = sorted(table_data[:-1], key=lambda x: x[5], reverse=True) + [table_data[-1]]
+    # Print the formatted table with Serial No.
+    print(tabulate(formatted_table_data, headers=["Ser", "Stock", "Qty", "Avg Price", "Price", "Gain/Loss", "Gain/Loss (%)", "Sel (+30%)", "Purchase(-5%)"], tablefmt="grid"))
 
-    # Format Gain/Loss (%) column as a percentage string for display
-    formatted_table_data = [
-        [row[0], row[1], row[2], row[3], row[4], f"{row[5]:.2f}%"] for row in table_data
-    ]
-
-    # Print the tabulated data with Total row
-    print(tabulate(formatted_table_data, headers=["Stock", "Qty", "Avg Purchase Price", "Current Price", "Gain/Loss", "Gain/Loss"], tablefmt="grid"))
-    
     return report_data, total_investment, total_current_value
 
 # Function to save stock data to a CSV file
@@ -136,6 +125,7 @@ def save_stock_data(stocks):
     df = pd.DataFrame(data)
     df.to_csv('stock_portfolio.csv', index=False)
     print("Stock data saved to 'stock_portfolio.csv'.")
+
 
 # Function to generate an Excel report
 def generate_excel_report(report_data, total_investment, total_current_value):
