@@ -23,7 +23,16 @@ def get_current_price(stock_name):
     data = stock.history(period="1d")
     return data['Close'].iloc[0] if not data.empty else None
 
-# Function to calculate insights
+# Function to get the 52-week high and low prices
+def get_52_week_high_low(stock_name):
+    stock = yf.Ticker(stock_name)
+    data = stock.history(period="1y")
+    if not data.empty:
+        high_52_week = data['High'].max()
+        low_52_week = data['Low'].min()
+        return high_52_week, low_52_week
+    return None, None
+
 def calculate_insights(stocks):
     total_investment = 0
     total_current_value = 0
@@ -59,6 +68,7 @@ def calculate_insights(stocks):
         
         average_purchase_price = total_purchase_price / total_quantity if total_quantity > 0 else 0
         current_price = get_current_price(stock_name)
+        high_52_week, low_52_week = get_52_week_high_low(stock_name)  # Get 52-week high and low
         
         if current_price is not None:
             current_value = current_price * total_quantity
@@ -83,7 +93,9 @@ def calculate_insights(stocks):
                 round(gain_loss_percent, 2),  # Keep Gain/Loss (%) with two decimal places
                 f"₹{int(future_sell_value_30)}",  # Convert to integer
                 f"₹{int(future_sell_value_minus_5)}",  # Convert to integer
-                f"₹{int(cumulative_profit)}"  # Cumulative profit from sales
+                f"₹{int(cumulative_profit)}",  # Cumulative profit from sales
+                f"₹{int(high_52_week)}" if high_52_week else "N/A",  # 52-week high
+                f"₹{int(low_52_week)}" if low_52_week else "N/A"  # 52-week low
             ])
         else:
             print(f"Could not retrieve current price for {stock_name}.")
@@ -110,10 +122,12 @@ def calculate_insights(stocks):
         f"{total_gain_loss_percent:.2f}%",  # Keep as two decimal points
         "-",  # Placeholder for future sell values in the total row
         "-",  # Placeholder for profit booking in the total row
+        "-",  # Placeholder for 52-week high in total row
+        "-"  # Placeholder for 52-week low in total row
     ])
 
     # Print the formatted table with Serial No.
-    print(tabulate(formatted_table_data, headers=["Ser", "Stock", "Qty", "Avg", "Price", "P/L", "P/L(%)", "Sell(+30%)", "Buy(-5%)", "Profit Booking"], tablefmt="grid"))
+    print(tabulate(formatted_table_data, headers=["Ser", "Stock", "Qty", "Avg", "Price", "P/L", "P/L(%)", "Sell(+30%)", "Buy(-5%)", "Total P/L", "52-H", "52-L"], tablefmt="grid"))
 
     return report_data, total_investment, total_current_value
 
