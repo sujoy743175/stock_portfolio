@@ -84,11 +84,13 @@ def calculate_insights(stocks):
             
             price_color = "\033[32m" if average_purchase_price < current_price else "\033[31m" if average_purchase_price > current_price else "\033[0m"
 
+            # Append a new column with the total invested amount in each stock
             table_data.append([
                 stock_name,
                 total_quantity,
                 f"₹{int(average_purchase_price)}",  # Convert to integer
                 f"{price_color}₹{int(current_price)}\033[0m",  # Convert to integer and apply color
+                f"₹{int(total_purchase_price)}",  # Total invested amount in the stock
                 f"₹{int(gain_loss)}",  # Convert to integer
                 round(gain_loss_percent, 2),  # Keep Gain/Loss (%) with two decimal places
                 f"₹{int(future_sell_value_30)}",  # Convert to integer
@@ -101,7 +103,7 @@ def calculate_insights(stocks):
             print(f"Could not retrieve current price for {stock_name}.")
     
     # Sort table_data by Gain/Loss (%) in descending order
-    table_data = sorted(table_data, key=lambda x: x[5], reverse=True)
+    table_data = sorted(table_data, key=lambda x: x[6], reverse=True)
 
     # Add serial numbers
     formatted_table_data = [
@@ -127,7 +129,7 @@ def calculate_insights(stocks):
     ])
 
     # Print the formatted table with Serial No.
-    print(tabulate(formatted_table_data, headers=["Ser", "Stock", "Qty", "Avg", "Price", "P/L", "P/L(%)", "Sell(+30%)", "Buy(-5%)", "Total P/L", "52-H", "52-L"], tablefmt="grid"))
+    print(tabulate(formatted_table_data, headers=["Ser", "Stock", "Qty", "Avg", "Price", "Invested", "P/L", "P/L(%)", "Sell(+30%)", "Buy(-5%)", "Total P/L", "52-H", "52-L"], tablefmt="grid"))
 
     return report_data, total_investment, total_current_value
 
